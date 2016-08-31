@@ -1,7 +1,6 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "TimeLoop.h"
-#include "TimePlayerControllerBase.h"
 #include "TimeGameMode.h"
 
 
@@ -15,7 +14,7 @@ ATimeGameMode::ATimeGameMode(const FObjectInitializer &ObjectInitializer) : Supe
 	TimeSpeed = 1.f;
 
 	//~~ Set the default PlayerController ~~ //
-	PlayerControllerClass = ATimePlayerControllerBase::StaticClass();
+	//PlayerControllerClass = ATimePlayerControllerBase::StaticClass();
 }
 
 

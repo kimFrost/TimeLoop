@@ -13,6 +13,8 @@ class TIMELOOP_API ATimeGameMode : public AGameMode
 {
 	GENERATED_BODY()
 	
+public:
+
 	// Sets default values for this's properties
 	ATimeGameMode(const FObjectInitializer &ObjectInitializer);
 
@@ -34,7 +36,6 @@ class TIMELOOP_API ATimeGameMode : public AGameMode
 	UFUNCTION(BlueprintCallable, Category = "Time")
 	void SetTimeRate(float Rate);
 	
-
 	//~~ Overrides ~~//
 
 	virtual void Tick(float DeltaTime) override;
