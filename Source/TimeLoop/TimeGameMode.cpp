@@ -36,3 +36,12 @@ void ATimeGameMode::BeginPlay()
 	Super::BeginPlay();
 
 }
+
+
+/*
+for (TMap<TWeakObjectPtr<AActor>, INT32>::TIterator MapIt(TestTMap); MapIt; ++MapIt)
+{
+	if (!MapIt.Key().IsValid())
+	TestTMap.Remove(MapIt.Key());
+}
+*/

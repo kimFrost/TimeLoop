@@ -36,6 +36,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Time")
 	void SetTimeRate(float Rate);
 	
+	TMap<AActor*, TArray<FVector>> TimeModel;
+
+	// OnTimeUpdate 
+
 	//~~ Overrides ~~//
 
 	virtual void Tick(float DeltaTime) override;
