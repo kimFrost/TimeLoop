@@ -5,6 +5,11 @@
 #include "GameFramework/GameMode.h"
 #include "TimeGameMode.generated.h"
 
+
+//~~~~~ Delegates/Event dispatcher ~~~~~//
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FTimeUpdated, float, Time);
+
+
 /**
  * 
  */
@@ -38,9 +43,13 @@ public:
 	
 	TMap<AActor*, TArray<FVector>> TimeModel;
 
-	// OnTimeUpdate 
 
-	//~~ Overrides ~~//
+	/*********** DELEGATES **************/
+
+	FTimeUpdated OnTimeUpdate;
+
+
+	/*********** Overrides **************/
 
 	virtual void Tick(float DeltaTime) override;
 
