@@ -2,6 +2,7 @@
 
 #include "TimeLoop.h"
 #include "TimeActor.h"
+#include "TimeGameMode.h"
 #include "TimeField.h"
 
 
@@ -28,16 +29,23 @@ void ATimeField::SetTimeRate(float Rate)
 
 void ATimeField::StartPlaying(bool EnableCollision)
 {
-	for (auto& Actor : ActorsInField)
+	for (auto& TimeActor : ActorsInField)
 	{
-		if (!EnableCollision)
+		if (TimeActor != nullptr)
 		{
-			//Disable physics and put to sleep.
-
-		}
-		else
-		{
-			// Disable physics and collision + put to sleep. Performance boost!
+			TimeActor->BaseMesh->SetSimulatePhysics(false);
+			if (!EnableCollision)
+			{
+				// Disable collision + put to sleep. Performance boost!
+				TimeActor->BaseMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+				TimeActor->BaseMesh->PutRigidBodyToSleep();
+			}
+			else
+			{
+				// Enable collision. A lot slower
+				TimeActor->BaseMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+			}
+			// When to remove and despawn actors?? On TimeLoop exit??
 		}
 	}
 }
@@ -45,36 +53,100 @@ void ATimeField::StartPlaying(bool EnableCollision)
 
 void ATimeField::StartRecording()
 {
-	for (auto& Actor : ActorsInField)
+	for (auto& TimeActor : ActorsInField)
 	{
-		// Enable physic and collision + wake
-		//Actor->FindMe;
+		if (TimeActor != nullptr)
+		{
+			// Enable physic and collision + wake
+			TimeActor->BaseMesh->SetSimulatePhysics(true);
+			TimeActor->BaseMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+			TimeActor->BaseMesh->WakeRigidBody();
+			/*
+			// Check for timeline entry
+			if (!Timeline.Contains(Actor)) {
+				Timeline.Add(TimeActor, TArray<FST_TimeEntry>());
+			}
+			*/
+		}
+		// When to remove and despawn actors?? On TimeLoop exit??
 	}
 }
 
 
-void ATimeField::Update()
+void ATimeField::Update(float Time)
 {
 	if (bIsRecording)
 	{
-		Record();
+		RecordFrame(Time);
 	}
 	else if (bIsPlaying)
 	{
-		for (auto& Actor : ActorsInField)
+		PlayFrame(Time);
+	}
+}
+
+void ATimeField::PlayFrame(float Time)
+{
+	if (Timeline.Num() > 0)
+	{
+		float ClosestMinTime = 0.f;
+		float ClosestMaxTime = 0.f;
+		bool bMinFound = false;
+		bool bMaxFound = false;
+
+		/*
+		Timeline.KeySort([](int32 A, int32 B) {
+			return A < B; // Sort from lowest to highest
+		});
+		*/
+
+		TArray<float> Times;
+		Timeline.GetKeys(Times);
+
+		if (Times.Num() > 1)
 		{
-			//Actor->GetPhysi
+			for (int i = 1; i < Times.Num(); i++)
+			{
+				if (Times[i] >= Time)
+				{
+					ClosestMinTime = Times[i - 1];
+					ClosestMaxTime = Times[i];
+					break;
+				}
+			}
+		}
+		else
+		{
+			ClosestMinTime = Times[0];
+			ClosestMaxTime = Times[0];
+		}
+
+		for (auto& TimeActor : ActorsInField)
+		{
+			//TimeActor->BaseMesh->SetPhysicsAngularVelocity
+			//TimeActor->BaseMesh->SetPhysicsLinearVelocity
 		}
 	}
 }
 
-
-void ATimeField::Record()
+void ATimeField::RecordFrame(float Time)
 {
-	for (auto& Actor : ActorsInField)
-	{
+	TMap<ATimeActor*, FST_TimeEntry> Entries;
 
+	for (auto& TimeActor : ActorsInField)
+	{
+		FST_TimeEntry NewEntry = FST_TimeEntry();
+		NewEntry.Transform = TimeActor->GetActorTransform();
+		FTransform Velocities;
+		Velocities.SetLocation(TimeActor->BaseMesh->GetPhysicsLinearVelocity());
+		Velocities.SetScale3D(TimeActor->BaseMesh->GetPhysicsAngularVelocity());
+		NewEntry.Velocity = Velocities;
+		NewEntry.Time = Time;
+
+		Entries.Add(TimeActor, NewEntry);
 	}
+
+	Timeline.Add(Time, Entries);
 }
 
 // Called when the game starts or when spawned
@@ -88,6 +160,12 @@ void ATimeField::BeginPlay()
 void ATimeField::Tick( float DeltaTime )
 {
 	Super::Tick( DeltaTime );
-	Update(); //!! Call on timer instead of tick 1000 / 60 or 30. 30 is less precise!
+
+	ATimeGameMode* GameMode = (ATimeGameMode*)GetWorld()->GetAuthGameMode();
+	if (GameMode)
+	{
+		Update(GameMode->CurrentTime); //!! Call on timer instead of tick 1000 / 60 or 30. 30 is less precise!
+	}
+
 }
 

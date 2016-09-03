@@ -20,8 +20,8 @@ ATimeActor::ATimeActor()
 	{
 		BaseMesh->SetStaticMesh(BaseMeshObj.Object);
 	}
-	BaseMesh->AttachParent = RootComponent;
-
+	//BaseMesh->AttachParent = RootComponent;
+	BaseMesh->SetupAttachment(RootComponent);
 
 
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
