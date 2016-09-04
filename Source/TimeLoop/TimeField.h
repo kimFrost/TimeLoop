@@ -41,8 +41,14 @@ public:
 	ATimeField(const FObjectInitializer &ObjectInitializer);
 
 
-	// Actors in field
+	//~~ TIME ~~//
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Time")
+	float CurrentTime;
+
+
+	// Actors in field
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Time")
 	TArray<ATimeActor*>	ActorsInField;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Time")
@@ -64,6 +70,10 @@ public:
 	//TMap<AActor*, TArray<FST_TimeEntry>> Timeline;
 
 
+
+	FTimerHandle TimeUpdateHandle;
+
+
 	UFUNCTION(BlueprintCallable, Category = "Time")
 	void SetTimeRate(float Rate);
 
@@ -74,7 +84,7 @@ public:
 	void StartPlaying(bool EnableCollision = false);
 
 	UFUNCTION(BlueprintCallable, Category = "Time")
-	void Update(float Time);
+	void Update();
 
 	UFUNCTION(BlueprintCallable, Category = "Time")
 	void PlayFrame(float Time);

@@ -13,6 +13,7 @@ ATimeField::ATimeField(const FObjectInitializer &ObjectInitializer) : Super(Obje
 	bIsRecording = false;
 	PlayDirection = -1;
 	PlayRate = 1.f;
+	CurrentTime = 0.f;
 
 
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
@@ -73,15 +74,15 @@ void ATimeField::StartRecording()
 }
 
 
-void ATimeField::Update(float Time)
+void ATimeField::Update()
 {
 	if (bIsRecording)
 	{
-		RecordFrame(Time);
+		RecordFrame(CurrentTime);
 	}
 	else if (bIsPlaying)
 	{
-		PlayFrame(Time);
+		PlayFrame(CurrentTime);
 	}
 }
 
@@ -153,7 +154,17 @@ void ATimeField::RecordFrame(float Time)
 void ATimeField::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
+	//GetWorld()->GetTimerManager().SetTimer(TimeUpdateHandle, this, &ATimeField::Update, 1.f);
+	//GetWorld()->GetTimerManager().SetTimer(TimeUpdateHandle, 1.f, true);
+
+	UWorld* World = GetWorld();
+	if (World)
+	{
+		World->GetTimerManager().SetTimer(TimeUpdateHandle, this, &ATimeField::Update, (1.f / 60), true, 0.f);
+		//World->GetTimerManager().ClearTimer(TimeUpdateHandle);
+		//World->GetTimerManager().ClearAllTimersForObject(this);
+	}
 }
 
 // Called every frame
@@ -161,11 +172,17 @@ void ATimeField::Tick( float DeltaTime )
 {
 	Super::Tick( DeltaTime );
 
+	/*
 	ATimeGameMode* GameMode = (ATimeGameMode*)GetWorld()->GetAuthGameMode();
 	if (GameMode)
 	{
 		Update(GameMode->CurrentTime); //!! Call on timer instead of tick 1000 / 60 or 30. 30 is less precise!
 	}
+	*/
+
+	CurrentTime += (DeltaTime * PlayRate);
+
+	//Update(CurrentTime);
 
 }
 
