@@ -21,8 +21,13 @@ ATimeField::ATimeField(const FObjectInitializer &ObjectInitializer) : Super(Obje
 
 }
 
+int ATimeField::GetTestValue()
+{
+	return Timeline.Num();
+}
 
-void ATimeField::SetTimeRate(float Rate)
+
+void ATimeField::SetPlayRate(float Rate)
 {
 	PlayRate = Rate;
 }
@@ -35,20 +40,22 @@ void ATimeField::StartPlaying(bool EnableCollision)
 		if (TimeActor != nullptr)
 		{
 			TimeActor->BaseMesh->SetSimulatePhysics(false);
-			if (!EnableCollision)
+			if (EnableCollision)
+			{
+				// Enable collision. A lot slower
+				TimeActor->BaseMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+			}
+			else
 			{
 				// Disable collision + put to sleep. Performance boost!
 				TimeActor->BaseMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 				TimeActor->BaseMesh->PutRigidBodyToSleep();
 			}
-			else
-			{
-				// Enable collision. A lot slower
-				TimeActor->BaseMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-			}
 			// When to remove and despawn actors?? On TimeLoop exit??
 		}
 	}
+	bIsPlaying = true;
+	bIsRecording = false;
 }
 
 
@@ -71,6 +78,8 @@ void ATimeField::StartRecording()
 		}
 		// When to remove and despawn actors?? On TimeLoop exit??
 	}
+	bIsPlaying = false;
+	bIsRecording = true;
 }
 
 
@@ -137,7 +146,8 @@ void ATimeField::RecordFrame(float Time)
 	for (auto& TimeActor : ActorsInField)
 	{
 		FST_TimeEntry NewEntry = FST_TimeEntry();
-		NewEntry.Transform = TimeActor->GetActorTransform();
+		//NewEntry.Transform = TimeActor->GetActorTransform();
+		NewEntry.Transform = TimeActor->BaseMesh->GetComponentTransform();
 		FTransform Velocities;
 		Velocities.SetLocation(TimeActor->BaseMesh->GetPhysicsLinearVelocity());
 		Velocities.SetScale3D(TimeActor->BaseMesh->GetPhysicsAngularVelocity());
@@ -154,6 +164,8 @@ void ATimeField::RecordFrame(float Time)
 void ATimeField::BeginPlay()
 {
 	Super::BeginPlay();
+
+	StartRecording();
 
 	//GetWorld()->GetTimerManager().SetTimer(TimeUpdateHandle, this, &ATimeField::Update, 1.f);
 	//GetWorld()->GetTimerManager().SetTimer(TimeUpdateHandle, 1.f, true);

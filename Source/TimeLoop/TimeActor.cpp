@@ -15,13 +15,19 @@ ATimeActor::ATimeActor()
 
 	//~~ BaseMesh ~~//
 	BaseMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("BaseMesh"));
-	static ConstructorHelpers::FObjectFinder<UStaticMesh>BaseMeshObj(TEXT("StaticMesh'/Game/Island/Meshes/Tile/tile.tile'"));
+	static ConstructorHelpers::FObjectFinder<UStaticMesh>BaseMeshObj(TEXT("StaticMesh'/Game/Geometry/Meshes/1M_Cube.1M_Cube'"));
 	if (BaseMeshObj.Succeeded())
 	{
 		BaseMesh->SetStaticMesh(BaseMeshObj.Object);
+		BaseMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+		BaseMesh->bAutoActivate = true;
+		//BaseMesh->AttachParent = RootComponent;
+		BaseMesh->SetupAttachment(RootComponent);
+		BaseMesh->SetSimulatePhysics(true);
+		BaseMesh->WakeRigidBody();
 	}
-	//BaseMesh->AttachParent = RootComponent;
-	BaseMesh->SetupAttachment(RootComponent);
+	
+	
 
 
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
@@ -33,7 +39,7 @@ ATimeActor::ATimeActor()
 void ATimeActor::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
 }
 
 // Called every frame

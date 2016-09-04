@@ -69,13 +69,16 @@ public:
 
 	//TMap<AActor*, TArray<FST_TimeEntry>> Timeline;
 
+	UFUNCTION(BlueprintCallable, Category = "Time")
+	int GetTestValue();
+
 
 
 	FTimerHandle TimeUpdateHandle;
 
 
 	UFUNCTION(BlueprintCallable, Category = "Time")
-	void SetTimeRate(float Rate);
+	void SetPlayRate(float Rate);
 
 	UFUNCTION(BlueprintCallable, Category = "Time")
 	void StartRecording();
