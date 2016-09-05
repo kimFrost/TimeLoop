@@ -8,9 +8,9 @@
 ATimeActor::ATimeActor()
 {
 
-
 	USceneComponent* const TranslationComp = CreateDefaultSubobject<USceneComponent>(TEXT("SceneComp"));
-	TranslationComp->Mobility = EComponentMobility::Static;
+	//TranslationComp->Mobility = EComponentMobility::Static;
+	TranslationComp->Mobility = EComponentMobility::Movable;
 	RootComponent = TranslationComp;
 
 	//~~ BaseMesh ~~//
@@ -21,9 +21,10 @@ ATimeActor::ATimeActor()
 		BaseMesh->SetStaticMesh(BaseMeshObj.Object);
 		BaseMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 		BaseMesh->bAutoActivate = true;
-		//BaseMesh->AttachParent = RootComponent;
-		BaseMesh->SetupAttachment(RootComponent);
+		BaseMesh->SetupAttachment(RootComponent); //OLD => BaseMesh->AttachParent = RootComponent;
+		//RootComponent = BaseMesh;
 		BaseMesh->SetSimulatePhysics(true);
+		//BaseMesh->Mobility = EComponentMobility::Movable;
 		BaseMesh->WakeRigidBody();
 	}
 	

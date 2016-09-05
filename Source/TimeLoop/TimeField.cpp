@@ -1,6 +1,10 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
+
+
 #include "TimeLoop.h"
+#include "Kismet/KismetMathLibrary.h"
+//#include "Kismet/GameplayStatics.h"
 #include "TimeActor.h"
 #include "TimeGameMode.h"
 #include "TimeField.h"
@@ -113,16 +117,26 @@ void ATimeField::PlayFrame(float Time)
 		TArray<float> Times;
 		Timeline.GetKeys(Times);
 
+
+
 		if (Times.Num() > 1)
 		{
-			for (int i = 1; i < Times.Num(); i++)
+			if (Times[Times.Num() - 1] >= Time)
 			{
-				if (Times[i] >= Time)
+				for (int i = 1; i < Times.Num(); i++)
 				{
-					ClosestMinTime = Times[i - 1];
-					ClosestMaxTime = Times[i];
-					break;
+					if (Times[i] >= Time)
+					{
+						ClosestMinTime = Times[i - 1];
+						ClosestMaxTime = Times[i];
+						break;
+					}
 				}
+			}
+			else
+			{
+				ClosestMinTime = Times[Times.Num() - 1];
+				ClosestMaxTime = ClosestMinTime;
 			}
 		}
 		else
@@ -131,10 +145,23 @@ void ATimeField::PlayFrame(float Time)
 			ClosestMaxTime = Times[0];
 		}
 
+		TMap<ATimeActor*, FST_TimeEntry>& MinMap = Timeline[ClosestMinTime];
+		TMap<ATimeActor*, FST_TimeEntry>& MaxMap = Timeline[ClosestMaxTime];
+
+		float TimeGap = ClosestMaxTime - ClosestMinTime;
+		float ProcentLerp = (Time - ClosestMinTime) / TimeGap;
+
 		for (auto& TimeActor : ActorsInField)
 		{
-			//TimeActor->BaseMesh->SetPhysicsAngularVelocity
-			//TimeActor->BaseMesh->SetPhysicsLinearVelocity
+			FST_TimeEntry& MinEntry = MinMap[TimeActor];
+			FST_TimeEntry& MaxEntry = MaxMap[TimeActor];
+
+			FTransform NewTransform = UKismetMathLibrary::TLerp(MinEntry.Transform, MaxEntry.Transform, ProcentLerp, ELerpInterpolationMode::QuatInterp);
+			FTransform NewVelocity = UKismetMathLibrary::TLerp(MinEntry.Velocity, MaxEntry.Velocity, ProcentLerp, ELerpInterpolationMode::QuatInterp);
+
+			TimeActor->BaseMesh->SetWorldTransform(NewTransform);
+			TimeActor->BaseMesh->SetPhysicsAngularVelocity(NewVelocity.GetTranslation());
+			TimeActor->BaseMesh->SetPhysicsLinearVelocity(NewVelocity.GetScale3D());
 		}
 	}
 }
